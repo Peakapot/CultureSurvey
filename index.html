@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cyber Culture Pulse Survey</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #121a33;
+      --card-soft: #1a2547;
+      --text: #eaf0ff;
+      --muted: #a8b4d9;
+      --accent: #7c9dff;
+      --accent-2: #4de3c8;
+      --warn: #ffbf69;
+      --danger: #ff6b81;
+      --ok: #61e294;
+      --shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at 15% 15%, #1d2f63 0%, #0b1020 42%),
+                  radial-gradient(circle at 85% 5%, #1a4f59 0%, transparent 35%),
+                  var(--bg);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(10px);
+      background: rgba(8, 12, 26, 0.8);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .nav-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0.9rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand {
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      color: white;
+      text-decoration: none;
+      display: inline-flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .brand span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 0 20px var(--accent-2);
+    }
+
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      padding: 0.45rem 0.8rem;
+      border-radius: 999px;
+      transition: all 0.2s ease;
+    }
+
+    .nav-links a:hover { color: white; background: rgba(255, 255, 255, 0.08); }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .hero {
+      margin-top: 1.2rem;
+      background: linear-gradient(140deg, rgba(124,157,255,0.2), rgba(77,227,200,0.11));
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: clamp(1rem, 2vw, 2rem);
+    }
+
+    h1, h2, h3 { margin-top: 0; }
+
+    .sub {
+      color: var(--muted);
+      max-width: 70ch;
+      margin-bottom: 0;
+    }
+
+    .grid {
+      display: grid;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .overview-grid {
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    }
+
+    .card {
+      background: linear-gradient(160deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .card p { color: var(--muted); }
+
+    .tag {
+      font-size: 0.8rem;
+      color: var(--accent-2);
+      background: rgba(77, 227, 200, 0.12);
+      border: 1px solid rgba(77, 227, 200, 0.35);
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      display: inline-block;
+      margin-bottom: 0.4rem;
+    }
+
+    .survey-wrap {
+      margin-top: 1.2rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .persona-options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.7rem;
+    }
+
+    .persona {
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 14px;
+      padding: 0.8rem;
+      background: var(--card);
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s;
+      color: var(--text);
+    }
+
+    .persona:hover { transform: translateY(-2px); border-color: var(--accent); }
+    .persona.active { border-color: var(--accent-2); box-shadow: 0 0 0 2px rgba(77,227,200,.2); }
+
+    .questions { display: grid; gap: 1rem; }
+
+    .question {
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      border-radius: 12px;
+      padding: 0.8rem;
+    }
+
+    .question small { color: var(--muted); }
+
+    .likert {
+      margin-top: 0.5rem;
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .likert label {
+      font-size: 0.87rem;
+      padding: 0.3rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: var(--card-soft);
+      cursor: pointer;
+    }
+
+    .likert input { margin-right: 0.2rem; }
+
+    .actions {
+      display: flex;
+      gap: 0.7rem;
+      flex-wrap: wrap;
+      margin-top: 0.6rem;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 0.68rem 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .primary { background: linear-gradient(120deg, var(--accent), #9cb0ff); color: #081128; }
+    .secondary { background: rgba(255,255,255,0.1); color: white; }
+
+    #report { margin-top: 1rem; display: none; }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 0.8rem;
+      margin-top: 0.8rem;
+    }
+
+    .kpi {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 12px;
+      padding: 0.8rem;
+    }
+
+    .score {
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .bar {
+      margin-top: 0.5rem;
+      width: 100%;
+      height: 10px;
+      background: rgba(255,255,255,.09);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar > span {
+      height: 100%;
+      display: block;
+      border-radius: inherit;
+      background: linear-gradient(120deg, var(--accent-2), var(--accent));
+    }
+
+    .focus li { margin-bottom: 0.4rem; color: var(--muted); }
+    .footnote { color: var(--muted); font-size: 0.85rem; }
+
+    @media (max-width: 620px) {
+      .nav-wrap { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="nav-wrap">
+      <a class="brand" href="#top"><span></span> Cyber Culture Pulse</a>
+      <div class="nav-links">
+        <a href="#overview">Overview</a>
+        <a href="#measure">How Culture is Measured</a>
+        <a href="#survey">Survey</a>
+        <a href="#report">Dashboard</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="top">
+    <section class="hero" aria-label="Landing">
+      <h1>Cybersecurity Culture Assessment</h1>
+      <p class="sub">
+        Measure your organization’s security culture across <strong>knowledge</strong>, <strong>comprehension</strong>,
+        <strong>behaviour</strong>, and <strong>attitude</strong>. Select a persona and complete the survey to generate an
+        instant dashboard highlighting strengths and the highest-priority improvement areas.
+      </p>
+    </section>
+
+    <section id="overview" class="grid overview-grid" style="margin-top: 1rem;">
+      <article class="card">
+        <div class="tag">Dimension 1</div>
+        <h3>Knowledge</h3>
+        <p>Assesses baseline awareness of cyber risks, policies, and controls (e.g., phishing signs, MFA use, data handling).</p>
+      </article>
+      <article class="card">
+        <div class="tag">Dimension 2</div>
+        <h3>Comprehension</h3>
+        <p>Tests whether people understand why controls matter, can interpret risk scenarios, and choose safe decisions.</p>
+      </article>
+      <article class="card">
+        <div class="tag">Dimension 3</div>
+        <h3>Behaviour</h3>
+        <p>Evaluates what people do in practice: reporting incidents, using secure workflows, and avoiding risky shortcuts.</p>
+      </article>
+      <article class="card">
+        <div class="tag">Dimension 4</div>
+        <h3>Attitude</h3>
+        <p>Measures motivation, ownership, and belief that cybersecurity is a shared responsibility across the organization.</p>
+      </article>
+    </section>
+
+    <section id="measure" class="card" style="margin-top: 1rem;">
+      <h2>How Culture is Measured and Improved</h2>
+      <p class="sub">
+        Culture maturity is scored on a 1–5 scale per question and normalized to a 0–100 score for each dimension. The dashboard classifies each area as:
+        <strong>Needs Focus (&lt;60)</strong>, <strong>Developing (60–79)</strong>, or <strong>Strong (80+)</strong>.
+      </p>
+      <ul>
+        <li><strong>Measure:</strong> Collect persona-specific responses to ensure relevance for general users, technical staff, and leadership.</li>
+        <li><strong>Interpret:</strong> Compare dimension scores to identify root gaps (e.g., strong knowledge but weak behaviour).</li>
+        <li><strong>Improve:</strong> Apply targeted interventions like practical simulations, manager-led coaching, and policy simplification.</li>
+        <li><strong>Reassess:</strong> Repeat monthly or quarterly to track trend lines and verify that interventions improved outcomes.</li>
+      </ul>
+      <p class="footnote">Tip: A healthy culture balances all four dimensions; sustained behaviour and attitude gains typically produce the most resilient outcomes.</p>
+    </section>
+
+    <section id="survey" class="survey-wrap">
+      <article class="card">
+        <h2>Persona Selection</h2>
+        <p class="sub">Choose your role. You will receive questions tailored to your responsibilities.</p>
+        <div class="persona-options" id="personaOptions"></div>
+      </article>
+
+      <form id="surveyForm" class="card" novalidate>
+        <h2>Survey Questions</h2>
+        <p class="sub">Rate each statement from 1 (Strongly Disagree) to 5 (Strongly Agree).</p>
+        <div class="questions" id="questionContainer"></div>
+        <div class="actions">
+          <button type="submit" class="primary">Generate Dashboard</button>
+          <button type="button" class="secondary" id="resetBtn">Reset</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="report" class="card" aria-live="polite">
+      <h2>Culture Dashboard Report</h2>
+      <p class="sub" id="reportSummary"></p>
+      <div class="kpi-grid" id="kpiGrid"></div>
+      <h3 style="margin-top: 1rem;">Key Focus Areas</h3>
+      <ul class="focus" id="focusList"></ul>
+    </section>
+  </main>
+
+  <script>
+    const personaQuestions = {
+      general: [
+        { dimension: 'Knowledge', text: 'I can recognize the common signs of phishing emails or messages.' },
+        { dimension: 'Comprehension', text: 'I understand why sensitive data must only be shared via approved channels.' },
+        { dimension: 'Behaviour', text: 'I consistently lock my device and protect my credentials in daily work.' },
+        { dimension: 'Attitude', text: 'I believe cybersecurity is part of my personal job responsibility.' },
+        { dimension: 'Behaviour', text: 'I promptly report suspicious activity instead of waiting for someone else to act.' },
+        { dimension: 'Comprehension', text: 'I understand the business impact if a cyber incident disrupts our work.' },
+        { dimension: 'Knowledge', text: 'I know how and where to report a suspected security issue.' },
+        { dimension: 'Attitude', text: 'I am willing to change habits when security guidance changes.' }
+      ],
+      technical: [
+        { dimension: 'Knowledge', text: 'I understand secure coding or secure configuration standards relevant to my role.' },
+        { dimension: 'Comprehension', text: 'I can assess technical trade-offs between delivery speed and security risk.' },
+        { dimension: 'Behaviour', text: 'I regularly integrate security testing/checks into development or operations workflows.' },
+        { dimension: 'Attitude', text: 'I view security reviews as enabling quality, not blocking delivery.' },
+        { dimension: 'Behaviour', text: 'I address vulnerabilities based on risk and remediation timelines.' },
+        { dimension: 'Knowledge', text: 'I understand core attack vectors affecting our systems (e.g., credential abuse, misconfiguration).' },
+        { dimension: 'Comprehension', text: 'I can explain technical security risks in business language to non-technical stakeholders.' },
+        { dimension: 'Attitude', text: 'I proactively share security learnings with peers and teams.' }
+      ],
+      leadership: [
+        { dimension: 'Knowledge', text: 'I understand our organization’s top cyber risks and current mitigation posture.' },
+        { dimension: 'Comprehension', text: 'I can interpret cyber metrics and relate them to business performance and resilience.' },
+        { dimension: 'Behaviour', text: 'I allocate time and budget to strengthen security capabilities and staff readiness.' },
+        { dimension: 'Attitude', text: 'I consistently communicate that security is a strategic priority.' },
+        { dimension: 'Behaviour', text: 'I hold teams accountable for secure outcomes, not just fast delivery.' },
+        { dimension: 'Comprehension', text: 'I can make risk-based decisions during major incidents or control failures.' },
+        { dimension: 'Knowledge', text: 'I understand legal, regulatory, and reputational consequences of cyber events.' },
+        { dimension: 'Attitude', text: 'I champion a no-blame reporting culture that encourages early escalation.' }
+      ]
+    };
+
+    const personaMeta = [
+      { key: 'general', label: 'General User', description: 'For all non-specialist employees and day-to-day users.' },
+      { key: 'technical', label: 'Technical User', description: 'For engineers, IT admins, analysts, and technical contributors.' },
+      { key: 'leadership', label: 'Leadership', description: 'For executives, directors, and people managers.' }
+    ];
+
+    const personaOptions = document.getElementById('personaOptions');
+    const questionContainer = document.getElementById('questionContainer');
+    const surveyForm = document.getElementById('surveyForm');
+    const report = document.getElementById('report');
+    const kpiGrid = document.getElementById('kpiGrid');
+    const focusList = document.getElementById('focusList');
+    const reportSummary = document.getElementById('reportSummary');
+    const resetBtn = document.getElementById('resetBtn');
+
+    let selectedPersona = 'general';
+
+    function renderPersonas() {
+      personaOptions.innerHTML = personaMeta.map(persona => `
+        <button type="button" class="persona ${persona.key === selectedPersona ? 'active' : ''}" data-persona="${persona.key}">
+          <strong>${persona.label}</strong><br>
+          <small>${persona.description}</small>
+        </button>
+      `).join('');
+
+      document.querySelectorAll('.persona').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectedPersona = btn.dataset.persona;
+          renderPersonas();
+          renderQuestions();
+          report.style.display = 'none';
+        });
+      });
+    }
+
+    function renderQuestions() {
+      const questions = personaQuestions[selectedPersona];
+      questionContainer.innerHTML = questions.map((q, idx) => {
+        const name = `q_${idx}`;
+        const options = [1, 2, 3, 4, 5].map(v => `
+          <label>
+            <input type="radio" name="${name}" value="${v}" required>
+            ${v}
+          </label>
+        `).join('');
+
+        return `
+          <div class="question">
+            <strong>${idx + 1}. ${q.text}</strong><br>
+            <small>${q.dimension}</small>
+            <div class="likert" role="radiogroup" aria-label="Question ${idx + 1}">
+              ${options}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function labelScore(score) {
+      if (score < 60) return { label: 'Needs Focus', color: 'var(--danger)' };
+      if (score < 80) return { label: 'Developing', color: 'var(--warn)' };
+      return { label: 'Strong', color: 'var(--ok)' };
+    }
+
+    function improvementTips(dimension) {
+      const tips = {
+        Knowledge: 'Run short, role-based awareness refreshers and reinforce key policies with practical examples.',
+        Comprehension: 'Use scenario discussions and tabletop exercises to improve risk-based decision making.',
+        Behaviour: 'Introduce nudges, secure defaults, and coaching to turn policy into daily secure habits.',
+        Attitude: 'Increase leadership messaging, recognition, and psychologically safe reporting to strengthen ownership.'
+      };
+      return tips[dimension] || 'Define a targeted action plan for this area.';
+    }
+
+    surveyForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const questions = personaQuestions[selectedPersona];
+      const formData = new FormData(surveyForm);
+
+      const scoresByDimension = {
+        Knowledge: [],
+        Comprehension: [],
+        Behaviour: [],
+        Attitude: []
+      };
+
+      for (let i = 0; i < questions.length; i += 1) {
+        const value = Number(formData.get(`q_${i}`));
+        if (!value) {
+          alert('Please answer all questions before generating the dashboard.');
+          return;
+        }
+        scoresByDimension[questions[i].dimension].push(value);
+      }
+
+      const normalized = Object.entries(scoresByDimension).map(([dimension, arr]) => {
+        const avg = arr.reduce((a, b) => a + b, 0) / arr.length;
+        const score = Math.round((avg / 5) * 100);
+        return { dimension, score, ...labelScore(score) };
+      });
+
+      const overall = Math.round(normalized.reduce((sum, d) => sum + d.score, 0) / normalized.length);
+      const weakest = [...normalized].sort((a, b) => a.score - b.score).slice(0, 2);
+
+      reportSummary.textContent = `Persona: ${selectedPersona.charAt(0).toUpperCase() + selectedPersona.slice(1)} | Overall Culture Score: ${overall}/100.`;
+
+      kpiGrid.innerHTML = normalized.map(item => `
+        <div class="kpi">
+          <strong>${item.dimension}</strong>
+          <div class="score" style="color:${item.color}">${item.score} <small>/100</small></div>
+          <small>${item.label}</small>
+          <div class="bar"><span style="width:${item.score}%"></span></div>
+        </div>
+      `).join('');
+
+      focusList.innerHTML = weakest.map(item => `
+        <li>
+          <strong>${item.dimension} (${item.score}/100):</strong>
+          ${improvementTips(item.dimension)}
+        </li>
+      `).join('');
+
+      report.style.display = 'block';
+      report.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    resetBtn.addEventListener('click', () => {
+      surveyForm.reset();
+      report.style.display = 'none';
+      renderQuestions();
+    });
+
+    renderPersonas();
+    renderQuestions();
+  </script>
+</body>
+</html>
