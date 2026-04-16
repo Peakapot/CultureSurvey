@@ -251,6 +251,29 @@
     }
 
     .focus li { margin-bottom: 0.4rem; color: var(--muted); }
+    .focus-details {
+      margin-top: 0.4rem;
+      padding-left: 1rem;
+    }
+
+    .focus-details li {
+      list-style: disc;
+      margin-bottom: 0.2rem;
+      color: var(--muted);
+    }
+
+    .report-actions {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .report-note {
+      margin-top: 0.5rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
     .footnote { color: var(--muted); font-size: 0.85rem; }
 
     @media (max-width: 620px) {
@@ -343,9 +366,14 @@
       <div class="kpi-grid" id="kpiGrid"></div>
       <h3 style="margin-top: 1rem;">Key Focus Areas</h3>
       <ul class="focus" id="focusList"></ul>
+      <div class="report-actions">
+        <button type="button" class="secondary" id="downloadPdfBtn" disabled>Download PDF Report</button>
+      </div>
+      <p class="report-note" id="reportNote">Generate your dashboard first to enable PDF download.</p>
     </section>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script>
     const personaQuestions = {
       general: [
@@ -394,8 +422,11 @@
     const focusList = document.getElementById('focusList');
     const reportSummary = document.getElementById('reportSummary');
     const resetBtn = document.getElementById('resetBtn');
+    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+    const reportNote = document.getElementById('reportNote');
 
     let selectedPersona = 'general';
+    let latestReportData = null;
 
     function renderPersonas() {
       personaOptions.innerHTML = personaMeta.map(persona => `
@@ -454,6 +485,112 @@
       return tips[dimension] || 'Define a targeted action plan for this area.';
     }
 
+    function detailedFocusGuidance(dimension) {
+      const detailedGuidance = {
+        Knowledge: [
+          'Why this matters: Low knowledge scores increase the likelihood of users missing early warning signs of compromise and policy violations.',
+          'What to do next: Introduce role-based micro-learning modules every month and include quick checks for phishing, password hygiene, and data classification.',
+          'How to sustain gains: Track completion rates and quiz performance by team, then reinforce weak topics in manager check-ins.'
+        ],
+        Comprehension: [
+          'Why this matters: People may know rules but still make poor decisions if they cannot apply controls to realistic business scenarios.',
+          'What to do next: Run scenario workshops where teams compare risky vs safe choices and discuss business impact from each option.',
+          'How to sustain gains: Add decision trees to common workflows so employees can quickly choose approved escalation paths.'
+        ],
+        Behaviour: [
+          'Why this matters: Behaviour is where risk is either reduced or created; weak behaviour often predicts incident recurrence.',
+          'What to do next: Reduce friction by embedding secure defaults, mandatory checks, and reminder nudges into existing tools and processes.',
+          'How to sustain gains: Monitor reporting rates, patch SLAs, and secure workflow adoption to verify habit changes over time.'
+        ],
+        Attitude: [
+          'Why this matters: If staff do not feel ownership, they are less likely to report issues early or maintain secure habits under pressure.',
+          'What to do next: Increase visible leadership commitment, celebrate positive security actions, and support a no-blame reporting culture.',
+          'How to sustain gains: Include culture indicators in team objectives and review progress in regular business performance discussions.'
+        ]
+      };
+
+      return detailedGuidance[dimension] || [
+        'Why this matters: This area requires targeted intervention to improve cyber resilience.',
+        'What to do next: Define specific owners, milestones, and review cadence.',
+        'How to sustain gains: Reassess monthly and adjust actions based on evidence.'
+      ];
+    }
+
+    function addWrappedText(doc, lines, startX, startY, maxWidth, lineHeight) {
+      let currentY = startY;
+      lines.forEach((line) => {
+        const wrapped = doc.splitTextToSize(line, maxWidth);
+        doc.text(wrapped, startX, currentY);
+        currentY += wrapped.length * lineHeight;
+      });
+      return currentY;
+    }
+
+    function generatePdfReport(reportData) {
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert('PDF library failed to load. Please check your connection and try again.');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 14;
+      const maxWidth = pageWidth - (margin * 2);
+      let y = 18;
+
+      doc.setFontSize(16);
+      doc.text('Cyber Culture Pulse - Survey Report', margin, y);
+      y += 8;
+
+      doc.setFontSize(11);
+      y = addWrappedText(doc, [
+        `Persona: ${reportData.personaLabel}`,
+        `Overall Culture Score: ${reportData.overall}/100`,
+        `Generated: ${reportData.generatedAt}`
+      ], margin, y, maxWidth, 6);
+      y += 2;
+
+      doc.setFontSize(13);
+      doc.text('Dimension Scores', margin, y);
+      y += 7;
+
+      doc.setFontSize(11);
+      reportData.normalized.forEach((item) => {
+        const line = `${item.dimension}: ${item.score}/100 (${item.label})`;
+        doc.text(line, margin, y);
+        y += 6;
+      });
+
+      y += 2;
+      doc.setFontSize(13);
+      doc.text('Key Focus Areas - Detailed Guidance', margin, y);
+      y += 7;
+      doc.setFontSize(11);
+
+      reportData.weakest.forEach((item, idx) => {
+        if (y > 255) {
+          doc.addPage();
+          y = 18;
+        }
+        doc.text(`${idx + 1}. ${item.dimension} (${item.score}/100)`, margin, y);
+        y += 6;
+
+        const guidance = detailedFocusGuidance(item.dimension);
+        guidance.forEach((point) => {
+          if (y > 270) {
+            doc.addPage();
+            y = 18;
+          }
+          y = addWrappedText(doc, [`• ${point}`], margin + 3, y, maxWidth - 3, 5.5);
+          y += 1;
+        });
+        y += 2;
+      });
+
+      doc.save(`culture-survey-report-${reportData.personaKey}.pdf`);
+    }
+
     surveyForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const questions = personaQuestions[selectedPersona];
@@ -483,8 +620,9 @@
 
       const overall = Math.round(normalized.reduce((sum, d) => sum + d.score, 0) / normalized.length);
       const weakest = [...normalized].sort((a, b) => a.score - b.score).slice(0, 2);
+      const personaLabel = selectedPersona.charAt(0).toUpperCase() + selectedPersona.slice(1);
 
-      reportSummary.textContent = `Persona: ${selectedPersona.charAt(0).toUpperCase() + selectedPersona.slice(1)} | Overall Culture Score: ${overall}/100.`;
+      reportSummary.textContent = `Persona: ${personaLabel} | Overall Culture Score: ${overall}/100.`;
 
       kpiGrid.innerHTML = normalized.map(item => `
         <div class="kpi">
@@ -499,9 +637,23 @@
         <li>
           <strong>${item.dimension} (${item.score}/100):</strong>
           ${improvementTips(item.dimension)}
+          <ul class="focus-details">
+            ${detailedFocusGuidance(item.dimension).map(detail => `<li>${detail}</li>`).join('')}
+          </ul>
         </li>
       `).join('');
 
+      latestReportData = {
+        personaKey: selectedPersona,
+        personaLabel,
+        overall,
+        normalized,
+        weakest,
+        generatedAt: new Date().toLocaleString()
+      };
+
+      downloadPdfBtn.disabled = false;
+      reportNote.textContent = 'Download the PDF to share a deeper report with key focus areas and recommended actions.';
       report.style.display = 'block';
       report.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
@@ -509,7 +661,18 @@
     resetBtn.addEventListener('click', () => {
       surveyForm.reset();
       report.style.display = 'none';
+      latestReportData = null;
+      downloadPdfBtn.disabled = true;
+      reportNote.textContent = 'Generate your dashboard first to enable PDF download.';
       renderQuestions();
+    });
+
+    downloadPdfBtn.addEventListener('click', () => {
+      if (!latestReportData) {
+        alert('Please generate the dashboard first.');
+        return;
+      }
+      generatePdfReport(latestReportData);
     });
 
     renderPersonas();
